@@ -1,8 +1,12 @@
 from pathlib import Path
+from typing import Callable, List
+from random import choice
+
 import numpy as np
 import matplotlib.pyplot as plt
 
-class Color:
+
+class _Color:
     _colors = {
         "Crimson": False,
         "Orange": False, 
@@ -21,8 +25,8 @@ class Color:
 
     @classmethod
     def rand_color(cls):
-        remaining = filter(lambda c: cls._colors[c], cls._colors.keys())
-        color = np.random.choice(remaining)
+        remaining = list(filter(lambda c: not cls._colors[c], cls._colors.keys()))
+        color = np.random.choice(np.array(remaining))
         cls._colors[color] = True
         return color
     
@@ -67,29 +71,29 @@ def _gen_axes(fig, width, major, minor, grid):
 
 
 def _plot(axes, width, x_values, func_y, graph_colors):
-    for i, y_values, color in enumerate(zip(func_y,graph_colors)):
+    for i, (y_values, color) in enumerate(zip(func_y,graph_colors)):
         axes.plot(x_values, y_values, label=f"f{i}(x)", color=color)
     axes.text(width / 2 * 1.03, width / 2 * 0.02, "x")
     axes.text(-width / 2 * 0.13, width / 2 * 1.05, "f(x)")
     axes.legend(loc=0)
 
 
-def graph(*args, width=20, colors=[], export=None, minor_grid=1, major_grid=5, grid=True):
-    """plot on or multiple functions (max = 13)
+def graph(*args: Callable, width: int=20, colors: List[str]=[], export: str=None, minor_grid: int=1, major_grid: int=5, grid: bool=True):
+    """plot one or multiple functions (at most 13)
 
     Args:
-        width (int, optional): [description]. Defaults to 20.
-        colors (list, optional): [description]. Defaults to [].
-        export ([type], optional): [description]. Defaults to None.
-        minor_grid (int, optional): [description]. Defaults to 1.
-        major_grid (int, optional): [description]. Defaults to 5.
-        grid (bool, optional): [description]. Defaults to True.
+        width (int, optional): Full Width of Plot. Defaults to 20.
+        colors (list, optional): Given colors will be used to color the indivduall graphs. Defaults to random choice.
+        export (str, optional): If given, the plot will be exported as <export>.png
+        minor_grid (int, optional): Distance of minor ticks. Defaults to 1.
+        major_grid (int, optional): Distance of major ticks. Defaults to 5.
+        grid (bool, optional): Decides if the grid is drawn or not. Defaults to True.
     """    
     #Setup
     corrected_width = width // 2 * 2
     functions = args[:12]
     x_values, func_y = _gen_values(functions, corrected_width)
-    graph_colors = Color.rand_colors(len(functions)) if not colors else colors
+    graph_colors = _Color.rand_colors(len(functions)) if not colors else colors
 
     #Generating Figure
     figure = plt.figure(figsize=(5, 5), dpi=100)
@@ -108,3 +112,17 @@ def graph(*args, width=20, colors=[], export=None, minor_grid=1, major_grid=5, g
         export_path = str(Path.home()) + export + ".png"
         plt.savefig(export_path, format="png", dpi=800, transparent=True)
 
+def _test():
+    def f1(x):
+        return x ** 2
+    
+    def f2(x):
+        return abs(x) * np.exp(x)
+    
+    def f3(x):
+        return np.arcsin(np.sin(x))
+    
+    graph(f1, f2, f3, width=30)
+
+if __name__ == "__main__":
+    _test()
