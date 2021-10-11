@@ -59,14 +59,14 @@ def _gen_axes(fig, width, major, minor, grid):
     axes.set_yticks(maj_ticks)
     axes.set_xticks(min_ticks, minor=True)
     axes.set_yticks(min_ticks, minor=True)
+        
+    if grid:
+        axes.grid(True, which="minor", color="0.6", lw=0.5)
+        axes.grid(True, which="major", color="0.4", lw=1)
     
     axes.set_xlim(xmin=-width / 2 - 1, xmax=width / 2 + 1)
     axes.set_ylim(ymin=-width / 2 - 1, ymax=width / 2 + 1)
 
-    if grid:
-        axes.grid(True, which="minor", color="0.5", lw=0.5)
-        axes.grid(True, which="major", color="0.5", lw=1)
-    
     return axes
 
 
@@ -99,7 +99,7 @@ def graph(*args: Callable, width: int=20, colors: List[str]=[], export: str=None
     figure = plt.figure(figsize=(5, 5), dpi=100)
     
     #Generating Axes (+ Grid)
-    axes = _gen_axes(figure, corrected_width, minor_grid, major_grid, grid)
+    axes = _gen_axes(figure, corrected_width, major_grid, minor_grid, grid)
 
     #Plotting
     _plot(axes, corrected_width, x_values, func_y, graph_colors)
@@ -111,6 +111,7 @@ def graph(*args: Callable, width: int=20, colors: List[str]=[], export: str=None
     if export:
         export_path = str(Path.home()) + export + ".png"
         plt.savefig(export_path, format="png", dpi=800, transparent=True)
+
 
 def _test():
     def f1(x):
